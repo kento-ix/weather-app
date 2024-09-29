@@ -10,7 +10,8 @@ const currentTempEl = document.getElementById('current-temp');
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-const API_KEY ='00c81a9a801af8a7758c18d5aacea325';
+require('dotenv').config();
+const API_KEY = process.env.API_KEY;
 
 setInterval(() => {
     const time = new Date();
@@ -35,13 +36,19 @@ function getWeatherData () {
         let {latitude, longitude } = success.coords;
 
         fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude=hourly,minutely&units=metric&appid=${API_KEY}`)
-        .then(res => res.json())
-        .then(data => {
-
-        console.log(data)
-        showWeatherData(data);
-        })
-
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! Status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                console.log(data);
+                showWeatherData(data);
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+            });
     })
 }
 
@@ -81,7 +88,7 @@ function showWeatherData (data){
     data.daily.forEach((day, idx) => {
         if(idx == 0){
             currentTempEl.innerHTML = `
-            <img src="http://openweathermap.org/img/wn//${day.weather[0].icon}@4x.png" alt="weather icon" class="w-icon">
+            <img src="http://openweathermap.org/img/wn//${day.weather[0].icon}@2x.png" alt="weather icon" class="w-icon">
             <div class="other">
                 <div class="day">${window.moment(day.dt*1000).format('dddd')}</div>
                 <div class="temp">Night - ${day.temp.night}&#176;C</div>
